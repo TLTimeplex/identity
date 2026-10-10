@@ -29,6 +29,7 @@ export default defineConfigWithVueTs(
             import: importPlugin,
         },
         settings: {
+            'import/internal-regex': '^@/',
             'import/resolver': {
                 typescript: {
                     alwaysTryTypes: true,
