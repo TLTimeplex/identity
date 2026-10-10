@@ -1,0 +1,48 @@
+services:
+  hydra-db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${HYDRA_DB_USER:-hydra}
+      POSTGRES_PASSWORD: ${HYDRA_DB_PASSWORD:-hydra-dev-password}
+      POSTGRES_DB: hydra
+    volumes:
+      - hydra-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  hydra-migrate:
+    image: oryd/hydra:v26.2.0
+    command: migrate sql up -e -y
+    environment:
+      DSN: postgres://${HYDRA_DB_USER:-hydra}:${HYDRA_DB_PASSWORD:-hydra-dev-password}@hydra-db:5432/hydra?sslmode=disable
+    depends_on:
+      hydra-db:
+        condition: service_healthy
+    restart: "no"
+
+  hydra:
+    image: oryd/hydra:v26.2.0
+    command: serve all --dev
+    ports:
+      - "127.0.0.1:4444:4444"
+      - "127.0.0.1:4445:4445"
+    environment:
+      DSN: postgres://${HYDRA_DB_USER:-hydra}:${HYDRA_DB_PASSWORD:-hydra-dev-password}@hydra-db:5432/hydra?sslmode=disable
+      URLS_SELF_ISSUER: ${HYDRA_PUBLIC_URL}
+      URLS_LOGIN: https://identity.test/oauth/login
+      URLS_CONSENT: https://identity.test/oauth/consent
+      SECRETS_SYSTEM: ${HYDRA_SYSTEM_SECRET}
+      LOG_LEVEL: info
+      SERVE_COOKIES_SECURE: "true"
+      WEBFINGER_OIDC_DISCOVERY_SUPPORTED_SCOPE: profile,email
+      OAUTH2_PKCE_ENFORCED: "true"
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  hydra-postgres-data:

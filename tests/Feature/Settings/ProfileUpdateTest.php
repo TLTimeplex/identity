@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();
@@ -52,6 +53,7 @@ test('email verification status is unchanged when the email address is unchanged
 
 test('user can delete their account', function () {
     $user = User::factory()->create();
+    Http::fake();
 
     $response = $this
         ->actingAs($user)

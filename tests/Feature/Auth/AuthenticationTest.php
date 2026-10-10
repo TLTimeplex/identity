@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Http\Client\Request as HttpRequest;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
 
@@ -55,12 +57,20 @@ test('users can not authenticate with invalid password', function () {
 
 test('users can logout', function () {
     $user = User::factory()->create();
+    Http::fake();
 
     $response = $this->actingAs($user)->post(route('logout'));
 
     $response->assertRedirect(route('home'));
 
     $this->assertGuest();
+
+    Http::assertSent(fn (HttpRequest $request): bool => $request->method() === 'DELETE'
+        && str_contains(
+            $request->url(),
+            '/admin/oauth2/auth/sessions/login?subject='.(string) $user->oidc_subject,
+        )
+    );
 });
 
 test('users are rate limited', function () {

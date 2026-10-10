@@ -1,0 +1,64 @@
+name: release-container
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+jobs:
+  production-compose-smoke:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: Identity
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_URL: https://identity.example.test
+      APP_PORT: '18080'
+      DB_CONNECTION: pgsql
+      DB_DATABASE: identity
+      DB_USERNAME: identity
+      DB_PASSWORD: ciLaravelPassword0123456789
+      HYDRA_PUBLIC_URL: https://hydra.example.test
+      HYDRA_PUBLIC_PORT: '14446'
+      HYDRA_DB_USER: hydra
+      HYDRA_DB_PASSWORD: ciHydraPassword0123456789
+      HYDRA_DSN: postgres://hydra:ciHydraPassword0123456789@hydra-db:5432/hydra?sslmode=disable
+      HYDRA_SYSTEM_SECRET: ci-hydra-system-secret-for-release-smoke-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate production Compose configuration
+        run: docker compose --env-file /dev/null --project-name identity-release-smoke -f compose.prod.yml config --quiet
+
+      - name: Build and start production Compose stack
+        run: docker compose --env-file /dev/null --project-name identity-release-smoke -f compose.prod.yml up --detach --build app scheduler hydra
+
+      - name: Verify database migrations completed
+        shell: bash
+        run: |
+          set -euo pipefail
+          for service in laravel-migrate hydra-migrate; do
+            container_id="$(docker compose --env-file /dev/null --project-name identity-release-smoke -f compose.prod.yml ps --all --quiet "$service")"
+            test -n "$container_id"
+            exit_code="$(docker inspect --format='{{.State.ExitCode}}' "$container_id")"
+            test "$exit_code" = "0"
+          done
+
+      - name: Smoke test Laravel and Hydra
+        run: |
+          curl --fail --silent --show-error --retry 30 --retry-delay 2 --retry-connrefused http://127.0.0.1:18080/
+          curl --fail --silent --show-error --retry 30 --retry-delay 2 --retry-connrefused http://127.0.0.1:14446/health/ready
+
+      - name: Show Compose logs on failure
+        if: failure()
+        run: docker compose --env-file /dev/null --project-name identity-release-smoke -f compose.prod.yml logs --no-color
+
+      - name: Stop stack and remove smoke-test volumes
+        if: always()
+        run: docker compose --env-file /dev/null --project-name identity-release-smoke -f compose.prod.yml down --volumes --remove-orphans

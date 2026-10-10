@@ -1,0 +1,137 @@
+name: identity-production
+
+x-laravel-environment: &laravel-environment
+  APP_NAME: ${APP_NAME:-Identity}
+  APP_ENV: production
+  APP_KEY: ${APP_KEY:?Provide APP_KEY through Infisical}
+  APP_DEBUG: "false"
+  APP_URL: ${APP_URL:?Provide the public Laravel URL through Infisical}
+  DB_CONNECTION: pgsql
+  DB_HOST: laravel-db
+  DB_PORT: "5432"
+  DB_DATABASE: ${DB_DATABASE:-identity}
+  DB_USERNAME: ${DB_USERNAME:-identity}
+  DB_PASSWORD: ${DB_PASSWORD:?Provide DB_PASSWORD through Infisical}
+  SESSION_DRIVER: database
+  SESSION_SECURE_COOKIE: "true"
+  CACHE_STORE: database
+  QUEUE_CONNECTION: database
+  HYDRA_ADMIN_URL: http://hydra:4445
+  HYDRA_PUBLIC_URL: ${HYDRA_PUBLIC_URL:?Provide the public Hydra URL through Infisical}
+  HYDRA_TIMEOUT: ${HYDRA_TIMEOUT:-5}
+  HYDRA_CONNECT_TIMEOUT: ${HYDRA_CONNECT_TIMEOUT:-2}
+
+services:
+  laravel-db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-identity}
+      POSTGRES_USER: ${DB_USERNAME:-identity}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Provide DB_PASSWORD through Infisical}
+    volumes:
+      - laravel-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  laravel-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    command: ["php", "artisan", "migrate", "--force"]
+    environment: *laravel-environment
+    depends_on:
+      laravel-db:
+        condition: service_healthy
+    restart: "no"
+
+  hydra-db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: hydra
+      POSTGRES_USER: ${HYDRA_DB_USER:-hydra}
+      POSTGRES_PASSWORD: ${HYDRA_DB_PASSWORD:?Provide HYDRA_DB_PASSWORD through Infisical}
+    volumes:
+      - hydra-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  hydra-migrate:
+    image: oryd/hydra:v26.2.0
+    command: ["migrate", "sql", "up", "-e", "-y"]
+    environment:
+      DSN: ${HYDRA_DSN:?Provide HYDRA_DSN through Infisical}
+    depends_on:
+      hydra-db:
+        condition: service_healthy
+    restart: "no"
+
+  hydra:
+    image: oryd/hydra:v26.2.0
+    command: ["serve", "all"]
+    environment:
+      DSN: ${HYDRA_DSN:?Provide HYDRA_DSN through Infisical}
+      URLS_SELF_ISSUER: ${HYDRA_PUBLIC_URL:?Provide the public Hydra URL through Infisical}
+      URLS_LOGIN: ${APP_URL:?Provide the public Laravel URL through Infisical}/oauth/login
+      URLS_CONSENT: ${APP_URL:?Provide the public Laravel URL through Infisical}/oauth/consent
+      SECRETS_SYSTEM: ${HYDRA_SYSTEM_SECRET:?Provide HYDRA_SYSTEM_SECRET through Infisical}
+      LOG_LEVEL: ${HYDRA_LOG_LEVEL:-info}
+      SERVE_COOKIES_SECURE: "true"
+      WEBFINGER_OIDC_DISCOVERY_SUPPORTED_SCOPE: profile,email
+      OAUTH2_PKCE_ENFORCED: "true"
+    ports:
+      - "127.0.0.1:${HYDRA_PUBLIC_PORT:-4446}:4444"
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    environment: *laravel-environment
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:80"
+    volumes:
+      - laravel-storage:/var/www/html/storage
+    depends_on:
+      laravel-migrate:
+        condition: service_completed_successfully
+      hydra:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    command: ["php", "artisan", "schedule:work"]
+    environment: *laravel-environment
+    volumes:
+      - laravel-storage:/var/www/html/storage
+    depends_on:
+      laravel-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  laravel-postgres-data:
+  hydra-postgres-data:
+  laravel-storage:
