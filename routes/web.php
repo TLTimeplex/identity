@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\OAuth\ConsentController;
 use App\Http\Controllers\OAuth\HydraLoginController;
 use Illuminate\Support\Facades\Route;
@@ -8,7 +9,12 @@ Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    //Route::middleware('can:identity.admin.view')->group(function () {
+        Route::get('admin/users', [UsersController::class, 'index'])->name('admin_users_index');
+    //});
 });
+
+
 
 Route::get('/oauth/login', HydraLoginController::class)
     ->name('oauth.login');
