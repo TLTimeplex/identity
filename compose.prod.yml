@@ -50,7 +50,10 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
-    command: ["php", "artisan", "migrate", "--force"]
+    command:
+      - sh
+      - -c
+      - php artisan migrate --force && php artisan db:seed --force
     environment: *laravel-environment
     depends_on:
       laravel-db:
