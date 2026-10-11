@@ -6,6 +6,14 @@ x-laravel-environment: &laravel-environment
   APP_KEY: ${APP_KEY:?Provide APP_KEY through Infisical}
   APP_DEBUG: "false"
   APP_URL: ${APP_URL:?Provide the public Laravel URL through Infisical}
+  MAIL_MAILER: ${MAIL_MAILER:?Provide MAIL_MAILER through Infisical}
+  MAIL_SCHEME: ${MAIL_SCHEME:-null}
+  MAIL_HOST: ${MAIL_HOST:?Provide MAIL_HOST through Infisical}
+  MAIL_PORT: ${MAIL_PORT:?Provide MAIL_PORT through Infisical}
+  MAIL_USERNAME: ${MAIL_USERNAME:?Provide MAIL_USERNAME through Infisical}
+  MAIL_PASSWORD: ${MAIL_PASSWORD:?Provide MAIL_PASSWORD through Infisical}
+  MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:?Provide MAIL_FROM_ADDRESS through Infisical}
+  MAIL_FROM_NAME: ${MAIL_FROM_NAME:?Provide MAIL_FROM_NAME through Infisical}
   DB_CONNECTION: pgsql
   DB_HOST: laravel-db
   DB_PORT: "5432"
@@ -68,7 +76,7 @@ services:
     image: oryd/hydra:v26.2.0
     command: ["migrate", "sql", "up", "-e", "-y"]
     environment:
-      DSN: ${HYDRA_DSN:?Provide HYDRA_DSN through Infisical}
+      DSN: postgres://${HYDRA_DB_USER:-hydra}:${HYDRA_DB_PASSWORD:?Provide HYDRA_DB_PASSWORD through Infisical}@hydra-db:5432/hydra?sslmode=disable
     depends_on:
       hydra-db:
         condition: service_healthy
@@ -78,7 +86,7 @@ services:
     image: oryd/hydra:v26.2.0
     command: ["serve", "all"]
     environment:
-      DSN: ${HYDRA_DSN:?Provide HYDRA_DSN through Infisical}
+      DSN: postgres://${HYDRA_DB_USER:-hydra}:${HYDRA_DB_PASSWORD:?Provide HYDRA_DB_PASSWORD through Infisical}@hydra-db:5432/hydra?sslmode=disable
       URLS_SELF_ISSUER: ${HYDRA_PUBLIC_URL:?Provide the public Hydra URL through Infisical}
       URLS_LOGIN: ${APP_URL:?Provide the public Laravel URL through Infisical}/oauth/login
       URLS_CONSENT: ${APP_URL:?Provide the public Laravel URL through Infisical}/oauth/consent
