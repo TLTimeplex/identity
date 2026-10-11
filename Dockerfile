@@ -23,6 +23,9 @@ RUN apt-get update \
     && sed -ri \
         -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' \
         /etc/apache2/apache2.conf \
+    && printf '<Directory ${APACHE_DOCUMENT_ROOT}>\n    AllowOverride All\n</Directory>\n' \
+        > /etc/apache2/conf-available/laravel.conf \
+    && a2enconf laravel \
     && rm -rf /var/lib/apt/lists/*
 
 
