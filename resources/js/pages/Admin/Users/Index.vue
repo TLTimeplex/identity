@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import Heading from '@/components/Heading.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useInitials } from '@/composables/useInitials';
-import { admin_users_index } from '@/routes';
+import { admin_users_index, admin_users_show } from '@/routes';
 
 defineOptions({
     layout: {
@@ -49,7 +49,9 @@ const formatDate = (value: string) =>
 <template>
     <Head title="Users" />
 
-    <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+    <div
+        class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+    >
         <Heading
             title="Users"
             description="All registered users and their roles"
@@ -72,10 +74,17 @@ const formatDate = (value: string) =>
                     <TableEmpty v-if="users.length === 0" :colspan="5">
                         No users found.
                     </TableEmpty>
-                    <TableRow v-for="user in users" :key="user.id">
+                    <TableRow
+                        v-for="user in users"
+                        :key="user.id"
+                        class="cursor-pointer"
+                        @click="router.visit(admin_users_show(user.id))"
+                    >
                         <TableCell>
                             <div class="flex items-center gap-3">
-                                <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
+                                <Avatar
+                                    class="h-8 w-8 overflow-hidden rounded-lg"
+                                >
                                     <AvatarFallback
                                         class="rounded-lg text-black dark:text-white"
                                     >
@@ -83,7 +92,13 @@ const formatDate = (value: string) =>
                                     </AvatarFallback>
                                 </Avatar>
                                 <div class="grid text-sm leading-tight">
-                                    <span class="font-medium">{{ user.name }}</span>
+                                    <Link
+                                        :href="admin_users_show(user.id)"
+                                        class="font-medium hover:underline"
+                                        @click.stop
+                                    >
+                                        {{ user.name }}
+                                    </Link>
                                     <span class="text-xs text-muted-foreground">
                                         {{ user.email }}
                                     </span>
@@ -111,10 +126,14 @@ const formatDate = (value: string) =>
                         >
                             {{ user.oidc_subject }}
                         </TableCell>
-                        <TableCell class="whitespace-nowrap text-muted-foreground">
+                        <TableCell
+                            class="whitespace-nowrap text-muted-foreground"
+                        >
                             {{ formatDate(user.created_at) }}
                         </TableCell>
-                        <TableCell class="whitespace-nowrap text-muted-foreground">
+                        <TableCell
+                            class="whitespace-nowrap text-muted-foreground"
+                        >
                             {{ formatDate(user.updated_at) }}
                         </TableCell>
                     </TableRow>
