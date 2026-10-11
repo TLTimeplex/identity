@@ -9,7 +9,7 @@ Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
-    Route::middleware('can:identity.admin.view')->group(function () {
+    Route::middleware(['can:identity.admin.view', '2fa'])->group(function () {
         Route::get('admin/users', [UsersController::class, 'index'])->name('admin_users_index');
         Route::get('admin/users/{user}', [UsersController::class, 'show'])->name('admin_users_show');
 
