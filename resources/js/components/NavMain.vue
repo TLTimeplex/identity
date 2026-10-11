@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -16,6 +17,7 @@ defineProps<{
 }>();
 
 const { isCurrentUrl } = useCurrentUrl();
+const auth = computed(() => usePage().props.auth);
 </script>
 
 <template>
@@ -36,7 +38,10 @@ const { isCurrentUrl } = useCurrentUrl();
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>
-    <SidebarGroup class="px-2 py-0" v-if="adminItems && adminItems.length">
+    <SidebarGroup
+        class="px-2 py-0"
+        v-if="auth.canViewAdmin && adminItems && adminItems.length"
+    >
         <SidebarGroupLabel>Admin</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in adminItems" :key="item.title">
