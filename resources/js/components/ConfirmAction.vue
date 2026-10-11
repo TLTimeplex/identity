@@ -35,7 +35,9 @@ const open = ref(false);
 const typed = ref('');
 
 const canConfirm = computed(
-    () => !props.disabled && (!props.confirmText || typed.value === props.confirmText),
+    () =>
+        !props.disabled &&
+        (!props.confirmText || typed.value === props.confirmText),
 );
 
 watch(open, () => {
@@ -60,7 +62,11 @@ const confirm = () => {
             </DialogHeader>
             <div v-if="confirmText" class="grid gap-2">
                 <Label for="confirm-text">
-                    Type <span class="font-mono font-semibold">{{ confirmText }}</span> to confirm
+                    Type
+                    <span class="font-mono font-semibold">{{
+                        confirmText
+                    }}</span>
+                    to confirm
                 </Label>
                 <Input id="confirm-text" v-model="typed" autocomplete="off" />
             </div>

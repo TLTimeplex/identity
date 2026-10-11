@@ -1,11 +1,19 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
+function createAdmin(): User
+{
+    test()->seed(DatabaseSeeder::class);
+
+    return tap(User::factory()->create())->assignRole('identity.admin');
+}
+
 test('admin can view a user', function () {
-    $admin = User::factory()->create();
+    $admin = createAdmin();
     $user = User::factory()->create();
 
     $this->actingAs($admin)
@@ -18,7 +26,7 @@ test('admin can view a user', function () {
 });
 
 test('admin can update name, email, verification and roles', function () {
-    $admin = User::factory()->create();
+    $admin = createAdmin();
     $user = User::factory()->create();
     Role::create(['name' => 'editor']);
 
@@ -39,7 +47,7 @@ test('admin can update name, email, verification and roles', function () {
 });
 
 test('admin can remove two factor authentication', function () {
-    $admin = User::factory()->create();
+    $admin = createAdmin();
     $user = User::factory()->create();
     $user->forceFill([
         'two_factor_secret' => 'secret',
@@ -53,7 +61,7 @@ test('admin can remove two factor authentication', function () {
 });
 
 test('admin can remove passkeys', function () {
-    $admin = User::factory()->create();
+    $admin = createAdmin();
     $user = User::factory()->create();
 
     $this->actingAs($admin)->delete(route('admin_users_passkeys_destroy', $user))->assertRedirect();
@@ -62,7 +70,7 @@ test('admin can remove passkeys', function () {
 });
 
 test('admin can delete a user', function () {
-    $admin = User::factory()->create();
+    $admin = createAdmin();
     $user = User::factory()->create();
 
     $this->actingAs($admin)
@@ -73,7 +81,7 @@ test('admin can delete a user', function () {
 });
 
 test('admin cannot delete themselves', function () {
-    $admin = User::factory()->create();
+    $admin = createAdmin();
 
     $this->actingAs($admin)->delete(route('admin_users_destroy', $admin))->assertForbidden();
 
@@ -81,7 +89,7 @@ test('admin cannot delete themselves', function () {
 });
 
 test('admin can sign a user out of all sessions', function () {
-    $admin = User::factory()->create();
+    $admin = createAdmin();
     $user = User::factory()->create();
 
     foreach (['a', 'b'] as $id) {
@@ -93,4 +101,11 @@ test('admin can sign a user out of all sessions', function () {
     $this->actingAs($admin)->delete(route('admin_users_sessions_destroy', $user))->assertRedirect();
 
     expect(DB::table('sessions')->where('user_id', $user->id)->count())->toBe(0);
+});
+
+test('user without the admin role cannot access admin pages', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get(route('admin_users_index'))->assertForbidden();
+    $this->actingAs($user)->get(route('admin_users_show', $user))->assertForbidden();
 });

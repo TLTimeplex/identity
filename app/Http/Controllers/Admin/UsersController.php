@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -76,7 +77,7 @@ class UsersController extends Controller
         $user->fill(['name' => $data['name'], 'email' => $data['email']]);
 
         if ($data['verified']) {
-            $user->email_verified_at ??= now();
+            $user->email_verified_at ??= Carbon::now();
         } else {
             $user->email_verified_at = null;
         }

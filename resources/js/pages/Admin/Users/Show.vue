@@ -336,7 +336,9 @@ const remove = (url: string) => router.delete(url, { preserveScroll: true });
                         title="Sign out of all sessions?"
                         description="The user will be logged out on every device and must sign in again."
                         confirm-label="Sign out everywhere"
-                        @confirm="remove(admin_users_sessions_destroy(user.id).url)"
+                        @confirm="
+                            remove(admin_users_sessions_destroy(user.id).url)
+                        "
                     >
                         <template #trigger>
                             <Button variant="destructive" size="sm">
