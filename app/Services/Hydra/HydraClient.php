@@ -46,6 +46,16 @@ class HydraClient
     }
 
     /**
+     * @param  array<string, mixed>  $body
+     */
+    public function post(string $path, array $body = []): Response
+    {
+        return $this->request()
+            ->post($this->normalizePath($path), $body)
+            ->throw();
+    }
+
+    /**
      * Send a PUT request to the Hydra Admin API.
      *
      * @param  array<string, mixed>  $query

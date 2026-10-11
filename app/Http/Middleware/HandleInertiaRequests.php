@@ -41,6 +41,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'canViewAdmin' => (bool) $request->user()?->can('identity.admin.view'),
+                'canEditHydraClients' => (bool) $request->user()?->can('identity.admin.hydra.edit'),
+                'canDeleteHydraClients' => (bool) $request->user()?->can('identity.admin.hydra.delete'),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

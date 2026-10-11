@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
         Permission::createOrFirst(['name' => 'identity.admin.view']);
         Permission::createOrFirst(['name' => 'identity.admin.edit']);
         Permission::createOrFirst(['name' => 'identity.admin.delete']);
+        Permission::createOrFirst(['name' => 'identity.admin.hydra.edit']);
+        Permission::createOrFirst(['name' => 'identity.admin.hydra.delete']);
 
         // update cache to know about the newly created permissions (required if using WithoutModelEvents in seeders)
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

@@ -14,7 +14,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { admin_users_index, dashboard } from '@/routes';
+import {
+    admin_hydra_clients_index,
+    admin_users_index,
+    dashboard,
+} from '@/routes';
 import type { NavItem } from '@/types';
 
 const adminNavItems: NavItem[] = [
@@ -30,7 +34,7 @@ const adminNavItems: NavItem[] = [
     },
     {
         title: 'Hydra',
-        href: '#',
+        href: admin_hydra_clients_index(),
         icon: Server,
     },
 ];

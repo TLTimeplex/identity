@@ -13,6 +13,8 @@ export type User = {
 export type Auth = {
     user: User;
     canViewAdmin: boolean;
+    canEditHydraClients: boolean;
+    canDeleteHydraClients: boolean;
 };
 
 export type Passkey = {
