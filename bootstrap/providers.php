@@ -7,5 +7,5 @@ use Spatie\Permission\PermissionServiceProvider;
 return [
     AppServiceProvider::class,
     FortifyServiceProvider::class,
-    PermissionServiceProvider::class
+    PermissionServiceProvider::class,
 ];
