@@ -35,13 +35,13 @@ spec:
             - -e
             - -y
           env:
-            - name: DSN
-              value: "postgres://hydra:$(HYDRA_DB_PASSWORD)@hydra-db:5432/hydra?sslmode=disable"
             - name: HYDRA_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: identity-app-secrets
                   key: HYDRA_DB_PASSWORD
+            - name: DSN
+              value: "postgres://hydra:$(HYDRA_DB_PASSWORD)@hydra-db:5432/hydra?sslmode=disable"
 ---
 apiVersion: batch/v1
 kind: Job
