@@ -26,6 +26,13 @@ jobs:
       HYDRA_DB_PASSWORD: ciHydraPassword0123456789
       HYDRA_DSN: postgres://hydra:ciHydraPassword0123456789@hydra-db:5432/hydra?sslmode=disable
       HYDRA_SYSTEM_SECRET: ci-hydra-system-secret-for-release-smoke-tests
+      MAIL_MAILER: log
+      MAIL_HOST: localhost
+      MAIL_PORT: '1025'
+      MAIL_USERNAME: ci
+      MAIL_PASSWORD: ciMailPassword0123456789
+      MAIL_FROM_ADDRESS: noreply@identity.example.test
+      MAIL_FROM_NAME: Identity
 
     steps:
       - name: Checkout code
