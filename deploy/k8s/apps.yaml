@@ -251,6 +251,12 @@ spec:
     - websecure
   routes:
     - kind: Rule
+      match: "Host(`identity.timeliners.org`) && Path(`/.well-known/passkey-endpoints`)"
+      priority: 30
+      services:
+        - name: identity-app
+          port: 80
+    - kind: Rule
       match: "Host(`identity.timeliners.org`) && PathPrefix(`/oauth2`)"
       priority: 20
       services:
