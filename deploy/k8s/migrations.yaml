@@ -4,7 +4,9 @@ metadata:
   name: hydra-migrate
   namespace: identity
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   backoffLimit: 3
   activeDeadlineSeconds: 600
@@ -49,7 +51,9 @@ metadata:
   name: laravel-migrate
   namespace: identity
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   backoffLimit: 3
   activeDeadlineSeconds: 600
@@ -121,7 +125,7 @@ spec:
             - name: QUEUE_CONNECTION
               value: database
             - name: HYDRA_ADMIN_URL
-              value: http://hydra:4445
+              value: "http://hydra:4445"
             - name: HYDRA_PUBLIC_URL
               valueFrom:
                 secretKeyRef:
