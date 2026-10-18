@@ -1,0 +1,284 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hydra
+  namespace: identity
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: hydra
+  template:
+    metadata:
+      labels:
+        app: hydra
+    spec:
+      containers:
+        - name: hydra
+          image: oryd/hydra:v26.2.0
+          args:
+            - serve
+            - all
+          ports:
+            - name: public
+              containerPort: 4444
+            - name: admin
+              containerPort: 4445
+          env:
+            - name: HYDRA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: identity-app-secrets
+                  key: HYDRA_DB_PASSWORD
+            - name: DSN
+              value: "postgres://hydra:$(HYDRA_DB_PASSWORD)@hydra-db:5432/hydra?sslmode=disable"
+            - name: URLS_SELF_ISSUER
+              valueFrom:
+                secretKeyRef:
+                  name: identity-app-secrets
+                  key: HYDRA_PUBLIC_URL
+            - name: URLS_LOGIN
+              value: "https://identity.timeliners.org/oauth/login"
+            - name: URLS_CONSENT
+              value: "https://identity.timeliners.org/oauth/consent"
+            - name: SECRETS_SYSTEM
+              valueFrom:
+                secretKeyRef:
+                  name: identity-app-secrets
+                  key: HYDRA_SYSTEM_SECRET
+            - name: LOG_LEVEL
+              value: info
+            - name: SERVE_COOKIES_SECURE
+              value: "true"
+            - name: WEBFINGER_OIDC_DISCOVERY_SUPPORTED_SCOPE
+              value: "profile,email"
+            - name: OAUTH2_PKCE_ENFORCED
+              value: "true"
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: public
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/alive
+              port: public
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hydra
+  namespace: identity
+spec:
+  selector:
+    app: hydra
+  ports:
+    - name: public
+      port: 4444
+      targetPort: public
+    - name: admin
+      port: 4445
+      targetPort: admin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: identity
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: identity-app
+  template:
+    metadata:
+      labels:
+        app: identity-app
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/tltimeplex/identity:0.1.3
+          ports:
+            - name: http
+              containerPort: 80
+          envFrom:
+            - secretRef:
+                name: identity-app-secrets
+          env:
+            - name: APP_ENV
+              value: production
+            - name: APP_DEBUG
+              value: "false"
+            - name: DB_CONNECTION
+              value: pgsql
+            - name: DB_HOST
+              value: laravel-db
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_DATABASE
+              value: identity
+            - name: DB_USERNAME
+              value: identity
+            - name: SESSION_DRIVER
+              value: database
+            - name: SESSION_SECURE_COOKIE
+              value: "true"
+            - name: CACHE_STORE
+              value: database
+            - name: QUEUE_CONNECTION
+              value: database
+            - name: HYDRA_ADMIN_URL
+              value: http://hydra:4445
+            - name: HYDRA_TIMEOUT
+              value: "5"
+            - name: HYDRA_CONNECT_TIMEOUT
+              value: "2"
+          volumeMounts:
+            - name: storage
+              mountPath: /var/www/html/storage
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 20
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: laravel-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-app
+  namespace: identity
+spec:
+  selector:
+    app: identity-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler
+  namespace: identity
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-scheduler
+  template:
+    metadata:
+      labels:
+        app: identity-scheduler
+    spec:
+      containers:
+        - name: scheduler
+          image: ghcr.io/tltimeplex/identity:0.1.3
+          command:
+            - php
+            - artisan
+            - schedule:work
+          envFrom:
+            - secretRef:
+                name: identity-app-secrets
+          env:
+            - name: APP_ENV
+              value: production
+            - name: APP_DEBUG
+              value: "false"
+            - name: DB_CONNECTION
+              value: pgsql
+            - name: DB_HOST
+              value: laravel-db
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_DATABASE
+              value: identity
+            - name: DB_USERNAME
+              value: identity
+            - name: SESSION_DRIVER
+              value: database
+            - name: SESSION_SECURE_COOKIE
+              value: "true"
+            - name: CACHE_STORE
+              value: database
+            - name: QUEUE_CONNECTION
+              value: database
+            - name: HYDRA_ADMIN_URL
+              value: http://hydra:4445
+            - name: HYDRA_TIMEOUT
+              value: "5"
+            - name: HYDRA_CONNECT_TIMEOUT
+              value: "2"
+          volumeMounts:
+            - name: storage
+              mountPath: /var/www/html/storage
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: laravel-storage
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: identity
+  namespace: identity
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: "Host(`identity.timeliners.org`) && PathPrefix(`/oauth2`)"
+      priority: 20
+      services:
+        - name: hydra
+          port: 4444
+    - kind: Rule
+      match: "Host(`identity.timeliners.org`) && PathPrefix(`/.well-known`)"
+      priority: 20
+      services:
+        - name: hydra
+          port: 4444
+    - kind: Rule
+      match: "Host(`identity.timeliners.org`) && PathPrefix(`/userinfo`)"
+      priority: 20
+      services:
+        - name: hydra
+          port: 4444
+    - kind: Rule
+      match: "Host(`identity.timeliners.org`) && PathPrefix(`/health`)"
+      priority: 20
+      services:
+        - name: hydra
+          port: 4444
+    - kind: Rule
+      match: "Host(`identity.timeliners.org`)"
+      priority: 1
+      services:
+        - name: identity-app
+          port: 80
+  tls:
+    certResolver: ionos-prod
