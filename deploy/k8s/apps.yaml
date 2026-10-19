@@ -123,6 +123,7 @@ spec:
                 /var/www/html/storage/app/public
               chown -R www-data:www-data /var/www/html/storage
               chmod -R u+rwX,g+rwX /var/www/html/storage
+              chmod 775 /var/www/html/storage
           securityContext:
             runAsUser: 0
           volumeMounts:
@@ -233,6 +234,7 @@ spec:
                 /var/www/html/storage/app/public
               chown -R www-data:www-data /var/www/html/storage
               chmod -R u+rwX,g+rwX /var/www/html/storage
+              chmod 775 /var/www/html/storage
           securityContext:
             runAsUser: 0
           volumeMounts:
