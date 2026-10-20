@@ -31,7 +31,18 @@ class HydraLoginResponse implements LoginResponse, TwoFactorLoginResponse
 
         abort_unless($user instanceof User, 401);
 
-        $result = $this->loginService->accept($challenge, $user);
+        $clientId = $request->session()->get('hydra.login_client_id');
+
+        $result = $this->loginService->userMayAccessClient(
+            is_string($clientId) ? $clientId : null,
+            $user,
+        )
+            ? $this->loginService->accept($challenge, $user)
+            : $this->loginService->reject(
+                $challenge,
+                'access_denied',
+                'You are not allowed to access this application.',
+            );
         $redirectTo = $result['redirect_to'] ?? null;
 
         abort_unless(
@@ -46,7 +57,10 @@ class HydraLoginResponse implements LoginResponse, TwoFactorLoginResponse
             'Hydra returned an invalid redirect URL.',
         );
 
-        $request->session()->forget('hydra.login_challenge');
+        $request->session()->forget([
+            'hydra.login_challenge',
+            'hydra.login_client_id',
+        ]);
 
         return Inertia::location($redirectTo);
     }

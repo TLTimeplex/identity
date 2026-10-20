@@ -42,12 +42,17 @@ class HydraLoginController extends Controller
                 $loginService,
                 $challenge,
                 $user,
+                $this->clientId($loginRequest),
             );
         }
 
         $request->session()->put(
             'hydra.login_challenge',
             $challenge,
+        );
+        $request->session()->put(
+            'hydra.login_client_id',
+            $this->clientId($loginRequest),
         );
 
         return redirect()->route('login');
@@ -88,15 +93,27 @@ class HydraLoginController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return $this->acceptLogin($loginService, $challenge, $user);
+        return $this->acceptLogin(
+            $loginService,
+            $challenge,
+            $user,
+            $this->clientId($loginRequest),
+        );
     }
 
     private function acceptLogin(
         LoginService $loginService,
         string $challenge,
         User $user,
+        ?string $clientId,
     ): RedirectResponse {
-        $result = $loginService->accept($challenge, $user);
+        $result = $loginService->userMayAccessClient($clientId, $user)
+            ? $loginService->accept($challenge, $user)
+            : $loginService->reject(
+                $challenge,
+                'access_denied',
+                'You are not allowed to access this application.',
+            );
 
         $redirectTo = $result['redirect_to'] ?? null;
 
@@ -108,6 +125,16 @@ class HydraLoginController extends Controller
         );
 
         return redirect()->away($redirectTo);
+    }
+
+    /**
+     * @param  array<string, mixed>  $loginRequest
+     */
+    private function clientId(array $loginRequest): ?string
+    {
+        $clientId = data_get($loginRequest, 'client.client_id');
+
+        return \is_string($clientId) ? $clientId : null;
     }
 
     private function isTrustedHydraRedirect(string $url): bool

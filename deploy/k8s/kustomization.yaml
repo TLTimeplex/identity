@@ -5,3 +5,8 @@ resources:
   - databases.yaml
   - migrations.yaml
   - apps.yaml
+
+# Single place to change the app version
+images:
+  - name: ghcr.io/tltimeplex/identity
+    newTag: 0.2.0

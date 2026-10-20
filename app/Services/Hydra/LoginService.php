@@ -2,6 +2,7 @@
 
 namespace App\Services\Hydra;
 
+use App\Models\Application;
 use App\Models\User;
 
 class LoginService
@@ -20,6 +21,35 @@ class LoginService
                 'login_challenge' => $challenge,
             ])
             ->json();
+    }
+
+    /**
+     * Clients without a matching application entry are not restricted.
+     * Otherwise the application must be active and its required permission,
+     * if any, must be held by the user.
+     */
+    public function userMayAccessClient(?string $clientId, User $user): bool
+    {
+        if ($clientId === null || $clientId === '') {
+            return true;
+        }
+
+        $application = Application::query()
+            ->with('requiredPermission')
+            ->where('hydra_client_id', $clientId)
+            ->first();
+
+        if ($application === null) {
+            return true;
+        }
+
+        if (! $application->is_active) {
+            return false;
+        }
+
+        $permission = $application->requiredPermission;
+
+        return $permission === null || $user->hasPermissionTo($permission);
     }
 
     /**
