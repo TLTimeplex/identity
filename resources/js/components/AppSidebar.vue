@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { KeySquare, LayoutGrid, Server, Users } from '@lucide/vue';
+import { AppWindow, KeySquare, LayoutGrid, Server, Users } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -15,6 +15,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import {
+    admin_applications_index,
     admin_hydra_clients_index,
     admin_users_index,
     dashboard,
@@ -33,11 +34,16 @@ const adminNavItems: NavItem[] = [
         icon: Users,
     },
     {
+        title: 'Applications',
+        href: admin_applications_index(),
+        icon: AppWindow,
+    },
+    {
         title: 'Hydra',
         href: admin_hydra_clients_index(),
         icon: Server,
     },
-];
+].sort((a, b) => a.title.localeCompare(b.title));
 
 const mainNavItems: NavItem[] = [
     {
@@ -45,7 +51,7 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-];
+].sort((a, b) => a.title.localeCompare(b.title));
 
 const footerNavItems: NavItem[] = [];
 </script>

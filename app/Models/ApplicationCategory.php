@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Database\Factories\ApplicationCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -24,7 +25,8 @@ class ApplicationCategory extends Model
         'name',
     ];
 
-    public function applications()
+    /** @return HasMany<Application, $this> */
+    public function applications(): HasMany
     {
         return $this->hasMany(Application::class, 'category_id');
     }

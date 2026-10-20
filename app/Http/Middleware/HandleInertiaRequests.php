@@ -41,6 +41,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'canViewAdmin' => (bool) $request->user()?->can('identity.admin.view'),
+                'canEditAdmin' => (bool) $request->user()?->can('identity.admin.edit'),
+                'canDeleteAdmin' => (bool) $request->user()?->can('identity.admin.delete'),
                 'canEditHydraClients' => (bool) $request->user()?->can('identity.admin.hydra.edit'),
                 'canDeleteHydraClients' => (bool) $request->user()?->can('identity.admin.hydra.delete'),
             ],

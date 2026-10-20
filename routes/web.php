@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ApplicationController;
 use App\Http\Controllers\Admin\HydraClientsController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\OAuth\ConsentController;
@@ -13,15 +14,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['can:identity.admin.view', '2fa'])->group(function () {
         Route::get('admin/users', [UsersController::class, 'index'])->name('admin_users_index');
         Route::get('admin/users/{user}', [UsersController::class, 'show'])->name('admin_users_show');
+        Route::get('admin/applications', [ApplicationController::class, 'index'])->name('admin_applications_index');
+        Route::get('admin/applications/{application}', [ApplicationController::class, 'show'])->name('admin_applications_show');
         Route::get('admin/hydra/clients', [HydraClientsController::class, 'index'])->name('admin_hydra_clients_index');
         Route::get('admin/hydra/clients/create', [HydraClientsController::class, 'create'])->name('admin_hydra_clients_create');
         Route::get('admin/hydra/clients/{clientId}', [HydraClientsController::class, 'show'])->name('admin_hydra_clients_show');
 
         Route::middleware('can:identity.admin.edit')->group(function () {
+            Route::get('admin/applications/create', [ApplicationController::class, 'create'])->name('admin_applications_create');
+            Route::post('admin/applications', [ApplicationController::class, 'store'])->name('admin_applications_store');
+            Route::patch('admin/applications/{application}', [ApplicationController::class, 'update'])->name('admin_applications_update');
+            Route::post('admin/applications/categories', [ApplicationController::class, 'createCategory'])->name('admin_applications_categories_store');
             Route::patch('admin/users/{user}', [UsersController::class, 'update'])->name('admin_users_update');
         });
 
         Route::middleware('can:identity.admin.delete')->group(function () {
+            Route::delete('admin/applications/categories/{category}', [ApplicationController::class, 'deleteCategory'])->name('admin_applications_categories_destroy');
+            Route::delete('admin/applications/{application}', [ApplicationController::class, 'destroy'])->name('admin_applications_destroy');
             Route::delete('admin/users/{user}', [UsersController::class, 'destroy'])->name('admin_users_destroy');
             Route::delete('admin/users/{user}/sessions', [UsersController::class, 'destroySessions'])->name('admin_users_sessions_destroy');
             Route::delete('admin/users/{user}/two-factor', [UsersController::class, 'destroyTwoFactor'])->name('admin_users_two_factor_destroy');

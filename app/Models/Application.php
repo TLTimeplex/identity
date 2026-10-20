@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Database\Factories\ApplicationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Permission\Models\Permission;
-use Carbon\Carbon;
 
 /**
  * @property int $id
@@ -20,6 +21,8 @@ use Carbon\Carbon;
  * @property string $hydra_client_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read ApplicationCategory|null $category
+ * @property-read Permission|null $requiredPermission
  */
 class Application extends Model
 {
@@ -39,12 +42,14 @@ class Application extends Model
         'hydra_client_id',
     ];
 
-    public function category()
+    /** @return BelongsTo<ApplicationCategory, $this> */
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ApplicationCategory::class, 'category_id');
     }
 
-    public function requiredPermission()
+    /** @return BelongsTo<Permission, $this> */
+    public function requiredPermission(): BelongsTo
     {
         return $this->belongsTo(Permission::class, 'required_permission');
     }
