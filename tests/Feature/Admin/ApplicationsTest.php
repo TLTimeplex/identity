@@ -4,6 +4,7 @@ use App\Models\Application;
 use App\Models\ApplicationCategory;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Database\QueryException;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Permission;
 
@@ -149,7 +150,7 @@ it('enforces unique Hydra client IDs in the database', function () {
     Application::factory()->create(['hydra_client_id' => 'dup']);
 
     expect(fn () => Application::factory()->create(['hydra_client_id' => 'dup']))
-        ->toThrow(Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });
 
 it('shows a permission-protected application to users holding the permission', function () {

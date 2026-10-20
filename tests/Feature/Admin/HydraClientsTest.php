@@ -188,6 +188,43 @@ it('updates a client while preserving its secret and existing settings', functio
         && ! array_key_exists('client_secret', $request->data()));
 });
 
+it('sends empty metadata and jwks back to Hydra as JSON objects', function () {
+    $existing = json_encode(hydraClientPayload()).'';
+    $existing = substr($existing, 0, -1).',"metadata":{},"jwks":{}}';
+    Http::fake([
+        'hydra.test:4445/admin/clients/test-client' => Http::sequence()
+            ->push($existing, 200, ['Content-Type' => 'application/json'])
+            ->push(hydraClientPayload(), 200),
+    ]);
+
+    $this->actingAs(createHydraAdmin())
+        ->patch(route('admin_hydra_clients_update', 'test-client'), [
+            'client_name' => 'Test Client',
+            'client_secret' => '',
+            'redirect_uris' => 'https://client.example/callback',
+            'post_logout_redirect_uris' => '',
+            'grant_types' => 'authorization_code',
+            'response_types' => 'code',
+            'scope' => 'openid profile',
+            'audience' => '',
+            'allowed_cors_origins' => '',
+            'contacts' => '',
+            'token_endpoint_auth_method' => 'client_secret_basic',
+            'owner' => '',
+            'client_uri' => '',
+            'logo_uri' => '',
+            'policy_uri' => '',
+            'tos_uri' => '',
+            'skip_consent' => false,
+            'skip_logout_consent' => false,
+        ])
+        ->assertRedirect(route('admin_hydra_clients_show', 'test-client'));
+
+    Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
+        && str_contains($request->body(), '"metadata":{}')
+        && str_contains($request->body(), '"jwks":{}'));
+});
+
 it('deletes a Hydra client', function () {
     Http::fake([
         'hydra.test:4445/admin/clients/test-client' => Http::response([], 204),

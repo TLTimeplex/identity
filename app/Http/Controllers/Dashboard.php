@@ -15,10 +15,10 @@ class Dashboard extends Controller
         $apps = Application::with('requiredPermission:id,name')->where('is_active', true)->orderBy('name')->get();
 
         // Filter out what user can access
-        $apps = $apps->filter(fn(Application $app) => $app->required_permission === null || $user->can($app->requiredPermission?->name))->values();
+        $apps = $apps->filter(fn (Application $app) => $app->required_permission === null || $user->can($app->requiredPermission?->name))->values();
 
         return Inertia::render('Dashboard', [
-            'apps' => $apps->map(fn(Application $app) => [
+            'apps' => $apps->map(fn (Application $app) => [
                 'id' => $app->id,
                 'name' => $app->name,
                 'description' => $app->description,

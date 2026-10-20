@@ -98,6 +98,13 @@ class OAuth2ClientService
             $client['client_secret_expires_at'],
         );
 
+        // Empty JSON objects decode to [] in PHP and must be sent back as {}.
+        foreach (['metadata', 'jwks'] as $field) {
+            if (array_key_exists($field, $client) && $client[$field] === []) {
+                $client[$field] = new \stdClass;
+            }
+        }
+
         return $this->hydra
             ->put('/admin/clients/'.rawurlencode($clientId), [], $client)
             ->json();
