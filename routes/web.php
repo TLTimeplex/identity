@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ApplicationController;
 use App\Http\Controllers\Admin\HydraClientsController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\OAuth\ConsentController;
 use App\Http\Controllers\OAuth\HydraLoginController;
 use Illuminate\Support\Facades\Route;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('dashboard', [Dashboard::class, 'index'])->name('dashboard');
     Route::middleware(['can:identity.admin.view', '2fa'])->group(function () {
         Route::get('admin/users', [UsersController::class, 'index'])->name('admin_users_index');
         Route::get('admin/users/{user}', [UsersController::class, 'show'])->name('admin_users_show');
