@@ -2,13 +2,28 @@
 
 namespace App\Models;
 
+use Database\Factories\ApplicationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Permission;
+use Carbon\Carbon;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $description
+ * @property string $url
+ * @property string $icon
+ * @property bool $is_active
+ * @property int|null $category_id
+ * @property string|null $required_permission
+ * @property string $hydra_client_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class Application extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApplicationFactory> */
+    /** @use HasFactory<ApplicationFactory> */
     use HasFactory;
 
     protected $table = 'application';

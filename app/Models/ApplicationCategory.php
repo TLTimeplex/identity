@@ -2,12 +2,20 @@
 
 namespace App\Models;
 
+use Database\Factories\ApplicationCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class ApplicationCategory extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApplicationCategoryFactory> */
+    /** @use HasFactory<ApplicationCategoryFactory> */
     use HasFactory;
 
     protected $table = 'application_category';

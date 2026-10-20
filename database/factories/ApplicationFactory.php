@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Application;
+use App\Models\ApplicationCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +24,7 @@ class ApplicationFactory extends Factory
             'url' => $this->faker->url(),
             'icon' => $this->faker->word(),
             'is_active' => $this->faker->boolean(),
-            'category_id' => \App\Models\ApplicationCategory::factory(),
+            'category_id' => ApplicationCategory::factory(),
             'required_permission' => null,
             'hydra_client_id' => $this->faker->uuid(),
         ];
@@ -56,7 +57,6 @@ class ApplicationFactory extends Factory
     /**
      * Indicate that the application requires a specific permission.
      *
-     * @param string $permission
      * @return Factory
      */
     public function requiresPermission(string $permission)
