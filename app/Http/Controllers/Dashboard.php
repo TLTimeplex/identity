@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class Dashboard extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $user = $request->user();
 

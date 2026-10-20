@@ -32,10 +32,8 @@ class ApplicationFactory extends Factory
 
     /**
      * Indicate that the application is active.
-     *
-     * @return Factory
      */
-    public function active()
+    public function active(): static
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => true,
@@ -44,10 +42,8 @@ class ApplicationFactory extends Factory
 
     /**
      * Indicate that the application is inactive.
-     *
-     * @return Factory
      */
-    public function inactive()
+    public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => false,
@@ -56,10 +52,8 @@ class ApplicationFactory extends Factory
 
     /**
      * Indicate that the application requires a specific permission.
-     *
-     * @return Factory
      */
-    public function requiresPermission(string $permission)
+    public function requiresPermission(string $permission): static
     {
         return $this->state(fn (array $attributes) => [
             'required_permission' => $permission,

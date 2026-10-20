@@ -35,9 +35,15 @@ defineProps<{
                     class="size-16 shrink-0 rounded-lg object-contain"
                 />
                 <div class="min-w-0 flex-1">
-                    <div class="truncate text-lg font-semibold">{{ app.name }}</div>
-                    <div class="line-clamp-2 text-sm">{{ app.description }}</div>
-                    <div class="truncate text-right text-xs text-muted-foreground">
+                    <div class="truncate text-lg font-semibold">
+                        {{ app.name }}
+                    </div>
+                    <div class="line-clamp-2 text-sm">
+                        {{ app.description }}
+                    </div>
+                    <div
+                        class="truncate text-right text-xs text-muted-foreground"
+                    >
                         {{ app.url }}
                     </div>
                 </div>
