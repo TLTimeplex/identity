@@ -9,4 +9,4 @@ resources:
 # Single place to change the app version
 images:
   - name: ghcr.io/tltimeplex/identity
-    newTag: 0.2.0
+    newTag: 0.2.1

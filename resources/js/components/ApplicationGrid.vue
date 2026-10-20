@@ -27,6 +27,8 @@ defineProps<{
                 v-for="app in apps"
                 :key="app.id"
                 :href="app.url"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="flex items-center gap-4 overflow-hidden rounded-xl border border-sidebar-border/70 p-4 transition-colors hover:bg-accent dark:border-sidebar-border"
             >
                 <img
