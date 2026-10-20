@@ -13,8 +13,20 @@
       <stop offset="0" stop-color="#5cc8ff"/>
       <stop offset="1" stop-color="#4a3df0"/>
     </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0" stop-color="#4a3df0" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#4a3df0" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#halo)"/>
+  <g filter="url(#glow)" opacity="0.45" transform="translate(256 256) scale(0.82) translate(-249 -256)" stroke-linejoin="round">
+    <path fill="url(#orange)" d="M 456,1 356,56 H 221 L 456,511 351,456 156,56 H 42 V 1 Z"/>
+    <path fill="url(#blue)" d="M 356,56 126,511 H 456 L 351,456 H 221 L 456,1 Z"/>
+  </g>
   <g transform="translate(256 256) scale(0.82) translate(-249 -256)" stroke-linejoin="round">
     <path fill="url(#orange)" d="M 456,1 356,56 H 221 L 456,511 351,456 156,56 H 42 V 1 Z"/>
     <path fill="url(#blue)" d="M 356,56 126,511 H 456 L 351,456 H 221 L 456,1 Z"/>
