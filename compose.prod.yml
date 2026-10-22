@@ -46,6 +46,7 @@ services:
     restart: unless-stopped
 
   laravel-migrate:
+    image: ${IDENTITY_IMAGE:-identity-production}
     build:
       context: .
       dockerfile: Dockerfile
@@ -106,6 +107,7 @@ services:
     restart: unless-stopped
 
   app:
+    image: ${IDENTITY_IMAGE:-identity-production}
     build:
       context: .
       dockerfile: Dockerfile
@@ -129,6 +131,7 @@ services:
     restart: unless-stopped
 
   scheduler:
+    image: ${IDENTITY_IMAGE:-identity-production}
     build:
       context: .
       dockerfile: Dockerfile
