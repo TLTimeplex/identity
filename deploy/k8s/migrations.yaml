@@ -76,7 +76,7 @@ spec:
               done
       containers:
         - name: migrate
-          image: ghcr.io/tltimeplex/identity
+          image: ghcr.io/timeliners-org/identity
           command:
             - sh
             - -c

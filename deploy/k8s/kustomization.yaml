@@ -8,5 +8,5 @@ resources:
 
 # Single place to change the app version
 images:
-  - name: ghcr.io/tltimeplex/identity
-    newTag: 0.2.2
+  - name: ghcr.io/timeliners-org/identity
+    newTag: 0.2.3
